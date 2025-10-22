@@ -23,3 +23,8 @@ six==1.17.0
 sqlparse==0.5.3
 tzdata==2025.2
 urllib3==2.5.0
+
+# 아래 세 줄 추가
+dj-database-url>=2.1.0        # DATABASE_URL 환경변수 파싱용
+gunicorn>=21.2.0              # Render에서 WSGI 서버 실행용
+whitenoise>=6.7.0             # 정적 파일 서빙용 (collectstatic 이후)
