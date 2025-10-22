@@ -46,3 +46,4 @@ tzdata==2025.2
 webcolors==24.11.1
 wheel==0.45.1
 whitenoise==6.11.0
+polyline==2.0.3
