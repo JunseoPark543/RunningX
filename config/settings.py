@@ -261,3 +261,35 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+
+# settings.py
+import os, sys, logging
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+        },
+    },
+    "root": {                 # 모든 로거의 기본 핸들러
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django.request": {   # 뷰에서 예외 발생 시 Traceback를 콘솔로
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        # 우리 앱 로그(원하면 앱 라벨로 바꿔도 됨)
+        "callapi": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
