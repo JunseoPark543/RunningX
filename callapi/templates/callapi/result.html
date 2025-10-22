@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>RunningX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://apis.openapi.sk.com/tmap/vectorjs?version=1&appKey=OF93Av1S5v2pHZvLIqzpUaq7OYEpaKFKa9yKt0NF"></script>
+
+<style>
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f7f7f7;
+    overflow-x: hidden;
+  }
+
+  /* 페이드인 */
+  @keyframes fadeInDown { from {opacity:0; transform:translateY(-40px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes fadeInUp { from {opacity:0; transform:translateY(40px);} to {opacity:1; transform:translateY(0);} }
+
+  /* 상단 로고 + 제목 */
+  .top-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: fadeInDown 1s ease forwards;
+    opacity: 0;
+  }
+  .top-header img {
+    height: 36px;
+    width: auto;
+    animation: fadeInDown 1s ease forwards;
+  }
+  .top-header h2 {
+    margin: 0;
+    font-size: 24px;
+    animation: fadeInDown 1s ease forwards;
+  }
+  hr { margin: 12px 0; border: none; border-top: 1px solid #ccc; }
+
+  /* 정보 영역 */
+  .info-section p {
+    margin: 10px 0;
+    animation: fadeInDown 1s ease forwards;
+    opacity: 0;
+  }
+
+  /* 지도 */
+  #map_div {
+    width: 100%;
+    height: 500px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    animation: fadeInDown 1s ease forwards;
+    opacity: 0;
+  }
+
+  /* 툴바 */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    animation: fadeInUp 1s ease forwards;
+    opacity: 0;
+  }
+  .btn {
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    border: 1px solid #ddd;
+  }
+  .btn:disabled { background:#eee; cursor:not-allowed; }
+  .pill {
+    padding: 6px 10px;
+    background: #f5f7ff;
+    border-radius: 999px;
+    font-size: 13px;
+  }
+
+  /* 홈으로 이동 버튼 */
+  .home-btn {
+    background: #000;
+    color: #fff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: auto; /* 우측 정렬 */
+    margin-top: 20px;
+  }
+
+    /* 푸터 */
+    footer {
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      color: #888888;
+      margin-top: auto; /* 폼과 지도 아래로 밀림 */
+      padding: 12px 0 20px;
+    }
+
+    footer hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin-bottom: 5px;
+      width: 90%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer p { margin: 2px 0; }
+
+  /* 모바일 최적화 */
+  @media (max-width:768px){
+    body{padding:12px;}
+    .top-header img{height:30px;}
+    .top-header h2{font-size:20px;}
+    .info-section p{font-size:15px;}
+    .btn{flex:1; font-size:15px; padding:12px;}
+    .home-btn{font-size:13px; padding:7px 10px;}
+  }
+  @media (max-width:400px){
+    .top-header img{height:26px;}
+    .top-header h2{font-size:18px;}
+    .info-section p{font-size:14px;}
+    .btn{font-size:14px; padding:10px;}
+  }
+</style>
+</head>
+
+<body onload="initTmap()">
+  <!-- 상단 로고 + 제목 -->
+  <div class="top-header">
+    <img src="{% static 'main/images/logo.png' %}" alt="Logo">
+    <h2>러닝코스 결과</h2>
+  </div>
+  <hr>
+
+  <!-- 정보 영역 -->
+  <div class="info-section">
+    <p><strong>주소:</strong> {{ address }}</p>
+    <p><strong>위도:</strong> {{ lat }}</p>
+    <p><strong>경도:</strong> {{ lon }}</p>
+    <p><strong>cycle 요청:</strong> {{ cycle }}</p>
+  </div>
+
+  <!-- 툴바 (지도 위) -->
+  <div class="toolbar">
+    <button id="prevBtn" class="btn" onclick="prevRoute()">&lt; 이전</button>
+    <button id="nextBtn" class="btn" onclick="nextRoute()">다음 &gt;</button>
+    <span class="pill" id="routeInfo">경로 1 / 1</span>
+    <span class="pill" id="leftPill">좌회전 0</span>
+    <span class="pill" id="rightPill">우회전 0</span>
+    <span class="pill" id="crossPill">횡단보도 0</span>
+    <span class="pill" id="lenPill">길이 -</span>
+    <span class="pill" id="caloriePill">칼로리 -</span>
+    <span class="pill" id="difficultyPill">난이도 -</span>
+    <span class="pill" id="difficulty_labelPill">난이도 -</span>
+    <span class="pill" id="facilityPill">편의시설 0개</span>
+  </div>
+
+  <!-- 지도 -->
+  <div id="map_div"></div>
+
+  <!-- 홈으로 이동 버튼 (가장 아래, 우측 정렬) -->
+  <a href="{% url 'main:home' %}" class="home-btn">홈으로 이동</a>
+<footer>
+      <hr>
+      <p>Team RunningX | 총괄 팀장 장재혁 | 개발 팀장 박준서 | 개발팀 김윤건 | 연구팀 김건우 | 연구팀 이태희</p>
+      <p>© 2025, Team RunningX. All rights reserved.</p>
+  </footer>
+
+<script>
+  // 이전에 작성한 Tmap + 경로 JS 그대로 유지
+  const CYCLE = Number(`{{ cycle|default:1 }}`);
+  const routesPayload = {{ routes_payload|safe }};
+  const routes = Array.isArray(routesPayload)?routesPayload:[];
+  let map, currentIndex=0;
+  let polyline=null, startMarker=null, endMarker=null;
+  let facilityMarkers=[], facilityLabels=[];
+  const infoPill=document.getElementById("routeInfo");
+  const leftPill=document.getElementById("leftPill");
+  const rightPill=document.getElementById("rightPill");
+  const crossPill=document.getElementById("crossPill");
+  const lenPill=document.getElementById("lenPill");
+  const caloriePill=document.getElementById("caloriePill");
+  const difficultyPill=document.getElementById("difficultyPill");
+  const difficulty_labelPill=document.getElementById("difficulty_labelPill");
+  const facilityPill=document.getElementById("facilityPill");
+
+  function initTmap(){
+    const firstLL=getFirstLatLng();
+    map=new Tmapv3.Map("map_div",{center:firstLL||new Tmapv3.LatLng(37.5665,126.9780), width:"100%", height:"500px", zoom:15});
+    map.on("ConfigLoad",function(){ if(routes.length>0) renderRoute(currentIndex); updateButtons(); window.addEventListener('keydown',onKeyNav); });
+  }
+  function getFirstLatLng(){ if(!routes.length||!routes[0].path?.length) return null; const [lon,lat]=routes[0].path[0]; return new Tmapv3.LatLng(lat,lon); }
+  function lonlatArrayToLatLngPath(lonlatList){ return (lonlatList||[]).map(([lon,lat])=>new Tmapv3.LatLng(lat,lon)); }
+  function asNumber(x,fallback=null){ const n=Number(x); return Number.isFinite(n)?n:fallback; }
+  function clearOverlays(){ if(polyline){ polyline.setMap(null); polyline=null; } if(startMarker){ startMarker.setMap(null); startMarker=null; } if(endMarker){ endMarker.setMap(null); endMarker=null; } facilityMarkers.forEach(m=>m.setMap(null)); facilityLabels.forEach(w=>w.setMap(null)); facilityMarkers=[]; facilityLabels=[]; }
+  function fitToPath(path){ if(!path||path.length===0) return; const bounds=new Tmapv3.LatLngBounds(); path.forEach(ll=>bounds.extend(ll)); if(map.fitBounds){ map.fitBounds(bounds,{padding:60}); } else { const sw=bounds.getSW(), ne=bounds.getNE(); map.setCenter(new Tmapv3.LatLng((sw._lat+ne._lat)/2,(sw._lng+ne._lng)/2)); map.setZoom(15);} }
+  function renderFacilities(facilities=[]){ if(!Array.isArray(facilities)) return; facilities.forEach(f=>{ const lat=asNumber(f.lat,null), lon=asNumber(f.lon,null); if(lat===null||lon===null)return; const pos=new Tmapv3.LatLng(lat,lon); const marker=new Tmapv3.Marker({position:pos,map:map,title:f.name||"편의시설"}); facilityMarkers.push(marker); const html=`<div class="fac-label">${escapeHtml(f.name||"시설명")}${f.type?`<span class="type">${escapeHtml(f.type)}</span>`:""}</div>`; const label=new Tmapv3.InfoWindow({position:pos,content:html,map:map}); facilityLabels.push(label); }); facilityPill.textContent=`편의시설 ${facilities.length}개`; }
+  function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+  function renderRoute(idx){ if(!routes.length) return; const item=routes[idx]; const path=lonlatArrayToLatLngPath(item?.path||[]); clearOverlays(); if(path.length>0){ polyline=new Tmapv3.Polyline({path:path,strokeColor:"#FF3B30",strokeWeight:6,direction:true,map:map}); startMarker=new Tmapv3.Marker({position:path[0],map:map,title:"출발"}); endMarker=new Tmapv3.Marker({position:path[path.length-1],map:map,title:"도착"}); fitToPath(path); } infoPill.textContent=`경로 ${idx+1} / ${routes.length}`; leftPill.textContent=`좌회전 ${asNumber(item?.turn?.left,0)}`; rightPill.textContent=`우회전 ${asNumber(item?.turn?.right,0)}`; crossPill.textContent=`횡단보도 ${asNumber(item?.crosswalks,0)}`; const baseLen=asNumber(item?.length_m,null); if(Number.isFinite(baseLen)&&CYCLE>=2){ const totalLen=Math.round(baseLen*CYCLE); lenPill.textContent=`길이 ${Math.round(baseLen)} m × ${CYCLE} = ${totalLen} m`; } else if(Number.isFinite(baseLen)){ lenPill.textContent=`길이 ${Math.round(baseLen)} m`; } else{ lenPill.textContent='길이 -'; } const calNum=asNumber(item?.calorie,null); caloriePill.textContent=calNum!==null?`칼로리 ${Math.round(calNum)} kcal`:`칼로리 ${item?.calorie??'-'}`; const diffText=(item?.difficulty??'').toString().trim(); difficultyPill.textContent=diffText?`난이도 ${diffText}`:'난이도 -'; const diff_labelText=(item?.difficulty_label??'').toString().trim(); difficulty_labelPill.textContent=diff_labelText?`난이도 ${diff_labelText}`:'난이도 -'; renderFacilities(item?.facilities||[]); }
+  function updateButtons(){ const prev=document.getElementById("prevBtn"); const next=document.getElementById("nextBtn"); prev.disabled=(currentIndex<=0); next.disabled=(currentIndex>=routes.length-1); }
+  function prevRoute(){ if(currentIndex>0){ currentIndex--; renderRoute(currentIndex); updateButtons(); } }
+  function nextRoute(){ if(currentIndex<routes.length-1){ currentIndex++; renderRoute(currentIndex); updateButtons(); } }
+  function onKeyNav(e){ if(e.key==='ArrowLeft') prevRoute(); if(e.key==='ArrowRight') nextRoute(); }
+</script>
+</body>
+</html>
+

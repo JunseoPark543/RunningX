@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>회원 정보 수정 | RunningX</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Pretendard", system-ui, sans-serif;
+      overflow: hidden;
+      height: 100dvh;
+      display: flex;
+    }
+
+    /* 좌측 영상 영역 */
+    .video-side {
+      flex: none;
+      width: 43%;
+      background: black;
+      position: relative;
+      overflow: hidden;
+      /* 대각선 구분선 110도 */
+      clip-path: polygon(0 0, 100% 0, calc(100% - 80px) 100%, 0 100%);
+    }
+
+    video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      will-change: opacity;
+    }
+
+    /* 우측 콘텐츠 영역 */
+    .content-side {
+      flex: none;
+      width: 57%;
+      background: white;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding-left: 80px;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 1s ease, transform 1s ease;
+      /* 대각선 구분선 110도 */
+      clip-path: polygon(80px 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    /* fade-out 애니메이션 */
+    @keyframes fadeOutLeft {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(-30px); }
+    }
+
+    .fade-out {
+      animation: fadeOutLeft 0.5s forwards;
+    }
+
+    /* 폼 스타일 */
+    h2 { font-size: 32px; font-weight: 600; margin-top: 10px; margin-bottom: 10px; }
+    hr {
+      width: 120px;
+      border: 0;
+      border-top: 1px solid #ccc;
+      margin: 10px 0;
+    }
+    form { font-size: 18px; line-height: 1.8em; }
+    label { display: block; margin-bottom: 5px; font-weight: 500; }
+    input { display: block; margin-bottom: 15px; width: 300px; padding: 6px; font-size: 16px; }
+    button {
+      background: #222;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      color: #333;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* 모바일 대응 */
+    @media (max-width: 900px) {
+      body { flex-direction: column; height: auto; overflow: visible; }
+      .video-side { display: none; }
+      .content-side {
+        width: 100%;
+        padding: 40px 20px;
+        align-items: center;
+        justify-content: flex-start;
+        transform: none !important;
+        opacity: 1 !important;
+        clip-path: none !important;
+      }
+      input { width: 90%; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 좌측 영상 -->
+  <div class="video-side">
+    <video id="runnerVideo" autoplay muted playsinline>
+      <source src="{% static 'main/videos/profileloop.mp4' %}?v=5" type="video/mp4">
+      브라우저가 동영상을 지원하지 않습니다.
+    </video>
+  </div>
+
+  <!-- 우측 콘텐츠 -->
+  <div class="content-side" id="contentSide">
+    <h2>회원 정보 수정</h2>
+    <hr>
+    <p>단위는 빼고 양의 실수로만 입력해주세요!</p>
+
+    {% if error_message %}
+      <p style="color:red;">{{ error_message }}</p>
+    {% endif %}
+
+    <form method="post" id="profileForm">
+      {% csrf_token %}
+
+      <label>몸무게 (kg)</label>
+      <input type="text" name="weight" value="{{ profile.weight }}">
+
+      <label>선호 러닝 거리 (m)</label>
+      <input type="text" name="preferred_distance" value="{{ profile.preferred_distance }}">
+
+      <label>선호 러닝 사이클 (회)</label>
+      <input type="text" name="preferred_cycle" value="{{ profile.preferred_cycle }}">
+
+      <button type="submit">저장</button>
+    </form>
+
+    <a href="{% url 'main:home' %}" class="fade-link">← 홈으로 돌아가기</a>
+  </div>
+
+  <script>
+    const video = document.getElementById("runnerVideo");
+    const contentSide = document.getElementById("contentSide");
+    const links = document.querySelectorAll(".fade-link");
+    const form = document.getElementById("profileForm");
+    const allContentElements = Array.from(contentSide.children);
+
+    // 🎞 페이지 로드 시 영상 + 콘텐츠 동시에 페이드인
+    window.addEventListener("load", () => {
+      // --- 영상 페이드인 ---
+      video.style.opacity = "0";
+      video.style.transition = "opacity 1.5s ease-in-out";
+      void video.offsetWidth; // 강제 리플로우
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => { video.style.opacity = "1"; });
+      });
+      video.play().catch(() => {
+        document.body.addEventListener("touchstart", () => video.play(), { once: true });
+      });
+
+      // --- 콘텐츠 페이드인 ---
+      contentSide.style.opacity = "0";
+      contentSide.style.transform = "translateX(30px)";
+      contentSide.style.transition = "opacity 1s ease, transform 1s ease";
+      void contentSide.offsetWidth;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          contentSide.style.opacity = "1";
+          contentSide.style.transform = "translateX(0)";
+        });
+      });
+    });
+
+    // 영상 자연스러운 반복
+    const FADE_TIME = 1.2;
+    video.addEventListener("timeupdate", () => {
+      if (video.duration - video.currentTime <= FADE_TIME) {
+        video.style.opacity = "0";
+      }
+    });
+    video.addEventListener("ended", () => {
+      video.currentTime = 0.01;
+      video.play();
+      setTimeout(() => { video.style.opacity = "1"; }, FADE_TIME * 1000);
+    });
+
+    // 홈 링크 클릭 시 fade-out 후 이동
+    links.forEach(link => {
+      link.addEventListener("click", function(e){
+        e.preventDefault();
+        const href = this.getAttribute("href");
+        allContentElements.forEach(el => el.classList.add("fade-out"));
+        setTimeout(() => { window.location.href = href; }, 500);
+      });
+    });
+
+    // 폼 제출 시 fade-out 후 전송
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      allContentElements.forEach(el => el.classList.add("fade-out"));
+      setTimeout(() => { form.submit(); }, 500);
+    });
+  </script>
+</body>
+</html>

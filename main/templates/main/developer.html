@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>만든 이들 | RunningX</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Pretendard", system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f7f7f7;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* 공통 애니메이션 */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOutLeft {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(-50px); }
+    }
+
+    /* 로고 */
+    .logo {
+      width: 200px;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: fadeInDown 1s ease forwards;
+      animation-delay: 0.3s;
+    }
+
+    /* 타이틀 */
+    h2 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      opacity: 0;
+      animation: fadeInDown 1s ease forwards;
+      animation-delay: 0.4s;
+    }
+
+    /* 구분선 */
+    hr {
+      width: 120px;
+      border: 0;
+      border-top: 2px solid #ccc;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeInDown 1s ease forwards;
+      animation-delay: 0.5s;
+    }
+
+    /* 목록 */
+    ul {
+      list-style: none;
+      padding: 0;
+      font-size: 20px;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeInUp 1s ease forwards;
+      animation-delay: 0.6s;
+    }
+
+    li {
+      margin: 15px 0;
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: center;
+    }
+
+    .name {
+      font-weight: 700;
+      font-size: 24px;
+      color: #000;
+    }
+
+    .position {
+      font-weight: 400;
+      font-size: 20px;
+      color: #666;
+    }
+
+    /* 홈 버튼 */
+    a.button {
+      text-decoration: none;
+      background: #222;
+      color: #fff;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 5px;
+      transition: 0.3s;
+      opacity: 0;
+      animation: fadeInUp 1s ease forwards;
+      animation-delay: 0.7s;
+    }
+    a.button:hover { background: #555; }
+
+    /* 전체 fade-out class */
+    body.fade-out {
+      animation: fadeOutLeft 0.5s forwards;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- 로고 -->
+  <img src="{% static 'main/images/logo.png' %}" alt="RunningX Logo" class="logo">
+
+  <!-- 타이틀 -->
+  <h2>개발진들</h2>
+
+  <!-- 구분선 -->
+  <hr>
+
+  <!-- 개발자 목록 -->
+  <ul id="developerList">
+    <li><span class="name">장재혁</span><span class="position">총괄 팀장</span></li>
+    <li><span class="name">박준서</span><span class="position">개발 팀장</span></li>
+    <li><span class="name">김윤건</span><span class="position">개발팀</span></li>
+    <li><span class="name">김건우</span><span class="position">연구팀</span></li>
+    <li><span class="name">이태희</span><span class="position">연구팀</span></li>
+  </ul>
+
+  <!-- 홈 버튼 -->
+  <a href="{% url 'main:home' %}" class="button">홈으로 돌아가기</a>
+
+  <script>
+    // body 전체를 대상으로 클릭 시 fade-out 후 이동
+    const clickableElements = document.querySelectorAll('button, a.button');
+    clickableElements.forEach(el => {
+      el.addEventListener('click', function(e){
+        e.preventDefault();
+        const href = this.tagName === 'A' ? this.getAttribute('href') : null;
+        const form = this.closest('form');
+
+        // body 전체에 fade-out 클래스 추가
+        document.body.classList.add('fade-out');
+
+        // 애니메이션 종료 후 페이지 이동/폼 제출
+        setTimeout(() => {
+          if(href) {
+            window.location.href = href;
+          } else if(form) {
+            form.submit();
+          }
+        }, 500); // fade-out 시간과 동일
+      });
+    });
+  </script>
+</body>
+</html>

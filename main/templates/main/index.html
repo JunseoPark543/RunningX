@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Running Course - Main</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100dvh;
+      margin: 0;
+      overflow-x: hidden; /* 좌측 페이드아웃 시 스크롤 방지 */
+      position: relative;
+    }
+
+    /* 컨테이너 전체에 페이드아웃 적용 */
+    #content-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+    /* 로고+캐치프레이즈 */
+    #intro {
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      width: 350px;
+      max-width: 80vw;
+    }
+
+    #intro.show { opacity: 1; }
+
+    /* 로그인 버튼 */
+    #login-button {
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+      margin-top: 30px;
+      padding: 10px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #222;
+      color: white;
+      cursor: pointer;
+      visibility: hidden;
+    }
+
+    #login-button.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* 페이드아웃 왼쪽: 부모에 적용 */
+    .fade-out-left {
+      opacity: 0 !important;
+      transform: translateX(-30px);
+    }
+
+    /* 하단 구분선 + 텍스트 */
+footer {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #888888;
+  position: absolute;
+  bottom: 10px; /* 화면 하단에서 10px 위로 */
+  left: 0;
+}
+
+    footer hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin-bottom: 5px;
+      width: 90%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer p {
+      margin: 2px 0;
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      body { justify-content: flex-start; padding-top: 25vh; }
+      #intro { width: 70vw; max-width: 300px; }
+      #login-button { font-size: 16px; margin-top: 24px; padding: 8px 20px; }
+    }
+
+    @media (max-width: 400px) {
+      body { padding-top: 20vh; }
+      #intro { width: 80vw; max-width: 260px; }
+      #login-button { font-size: 15px; margin-top: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 모든 요소를 감싸는 컨테이너 -->
+  <div id="content-wrapper">
+    <img id="intro" src="{% static 'main/images/unite.png' %}" alt="RunningX Intro">
+    <button id="login-button">로그인</button>
+  </div>
+
+  <!-- 하단 푸터 -->
+  <footer>
+    <hr>
+    <p>Team RunningX | 총괄 팀장 장재혁 | 개발 팀장 박준서 | 개발팀 김윤건 | 연구팀 김건우 | 연구팀 이태희</p>
+    <p>© 2025, Team RunningX. All rights reserved.</p>
+  </footer>
+
+  <script>
+    window.onload = () => {
+      const intro = document.getElementById('intro');
+      const loginButton = document.getElementById('login-button');
+      const wrapper = document.getElementById('content-wrapper');
+
+      // 페이드인
+      setTimeout(() => { intro.classList.add('show'); }, 100);
+      setTimeout(() => { loginButton.classList.add('show'); }, 2600);
+
+      // 클릭 시 부모 컨테이너 전체를 페이드아웃
+      wrapper.querySelectorAll('*').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          // 부모에 fade-out 적용
+          wrapper.classList.add('fade-out-left');
+
+          setTimeout(() => {
+            // 로그인 버튼 클릭 시 로그인 페이지로 이동
+            if (e.target === loginButton) {
+              window.location.href = '{% url "main:login" %}';
+            }
+          }, 500); // 페이드아웃 시간
+        });
+      });
+    };
+  </script>
+</body>
+</html>
+

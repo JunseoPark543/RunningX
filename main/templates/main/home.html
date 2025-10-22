@@ -1,0 +1,330 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>홈 | RunningX</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Pretendard", system-ui, sans-serif;
+      overflow: hidden;
+      height: 100dvh;
+      display: flex;
+    }
+
+    /* 🟩 가림막 */
+    #splash {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: black;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+    #splash.hidden { opacity: 0; pointer-events: none; }
+
+/* 🟦 좌우 분할 (110도 기울기 + 기울어진 반투명 라인) */
+.video-side {
+  flex: none;
+  width: 43%;
+  background: black;
+  position: relative;
+  overflow: hidden;
+  /* 왼쪽이 위로 올라가는 대각선 (110도 방향에 대응) */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 80px) 100%, 0 100%);
+}
+
+.content-side {
+  flex: none;
+  width: 57%;
+  background: white;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 80px;
+  position: relative;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  /* 오른쪽 영역도 대칭 클리핑 */
+  clip-path: polygon(80px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+    /* 🎬 영상 */
+    video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 1s ease-in-out;
+      opacity: 1;
+    }
+
+    /* 🏃 로고 + 캐치프레이즈 */
+    .logo {
+      position: absolute;
+      top: 5px;
+      left: 30px;
+      width: 480px;
+      opacity: 0;
+      animation: fadeInDown 1.2s ease forwards;
+      animation-delay: 0.8s;
+    }
+
+    .catch {
+      position: absolute;
+      top: 75px;
+      left: 80px;
+      width: 420px;
+      opacity: 0;
+      animation: fadeInDown 1.2s ease forwards;
+      animation-delay: 1s;
+    }
+
+    /* 📱 모바일 전용 로고 */
+    .mobile-unite {
+      display: none;
+      position: static;
+      width: 240px;
+      margin: 20px auto 10px auto;
+      opacity: 0;
+      animation: fadeInDown 1.2s ease forwards;
+      animation-delay: 0.8s;
+    }
+
+    /* 🧍 인사 문구 */
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-top: 100px;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeInDown 1s ease forwards;
+      animation-delay: 1.2s;
+    }
+
+    /* 🔲 버튼 그리드 */
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 10px;
+      width: 80%;
+      max-width: 700px;
+      opacity: 0;
+      animation: fadeInUp 1.2s ease forwards;
+      animation-delay: 1.4s;
+    }
+
+    .button-grid form {
+      margin: 0;
+      width: 100%;
+    }
+
+    /* 버튼 공통 스타일 */
+    .button-grid button,
+    .button-grid a {
+      border: none;
+      font-weight: 600;
+      font-size: 20px;
+      padding: 50px 0px;
+      border-radius: 0px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      text-decoration: none;
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+
+    .button-grid img {
+      width: 24px;
+      height: 24px;
+      margin-top: 2px;
+      margin-right: 60px;
+      transform: scale(3.5);
+      transform-origin: center;
+    }
+
+    /* 버튼 색상 */
+    .btn-route { background: #d9d9d9; color: #000; }
+    .btn-profile { background: #888888; color: white; }
+    .btn-logout { background: #555; color: white; }
+    .btn-credit { background: #e5e5e5; color: #000; }
+
+    .button-grid button:hover,
+    .button-grid a:hover {
+      filter: brightness(0.9);
+    }
+
+    /* 애니메이션 */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* fade-out class */
+    .fade-out {
+      opacity: 0 !important;
+      transform: translateX(-30px) !important;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+
+/* ✅ 모바일 대응 */
+@media (max-width: 900px) {
+  body {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* 🎬 영상 영역 완전히 숨기기 (대각선 포함) */
+  .video-side,
+  .video-side::after {
+    display: none !important;
+    clip-path: none !important;
+  }
+
+  /* 🏃 콘텐츠 영역 100% 확장 + 대각선 제거 */
+  .content-side {
+    width: 100% !important;
+    height: auto;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    clip-path: none !important;
+  }
+
+  /* 데스크톱용 로고 & 캐치프레이즈 숨기기 */
+  .logo,
+  .catch {
+    display: none;
+  }
+
+  /* 모바일 전용 로고 표시 */
+  .mobile-unite {
+    display: block;
+  }
+
+  /* 인사 문구 중앙 정렬 */
+  h2 {
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  /* 버튼은 단일 컬럼으로 */
+  .button-grid {
+    grid-template-columns: 1fr;
+    width: 90%;
+    max-width: 500px;
+  }
+}
+  </style>
+</head>
+
+<body>
+  <div id="splash"></div>
+
+  <!-- 🎬 좌측 영상 -->
+  <div class="video-side">
+    <video id="runnerVideo" autoplay muted playsinline>
+      <source src="{% static 'main/videos/runnervideo.mp4' %}" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- 🏃 우측 콘텐츠 -->
+  <div class="content-side" id="contentSide">
+    <!-- 데스크톱용 로고 -->
+    <img src="{% static 'main/images/logo.png' %}" alt="RunningX Logo" class="logo">
+    <img src="{% static 'main/images/catch.png' %}" alt="Catchphrase" class="catch">
+    <!-- 모바일용 로고 -->
+    <img src="{% static 'main/images/unite.png' %}" alt="RunningX Unite" class="mobile-unite">
+
+    <h2>안녕하세요 {{ profile.user.username }}님!</h2>
+
+    {% if error_message %}
+      <p style="color:red;">{{ error_message }}</p>
+    {% endif %}
+
+    <div class="button-grid">
+      <form action="{% url 'main:home' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-route fade-link">
+          ㅤ경로 추천받기
+          <img src="{% static 'main/images/buttonicon1.png' %}" alt="아이콘">
+        </button>
+      </form>
+      <a href="{% url 'main:profile' %}" class="btn-profile fade-link">
+        ㅤ회원 정보 수정
+        <img src="{% static 'main/images/buttonicon2.png' %}" alt="아이콘">
+      </a>
+      <a href="{% url 'main:logout' %}" class="btn-logout fade-link">
+        ㅤ로그아웃
+        <img src="{% static 'main/images/buttonicon3.png' %}" alt="아이콘">
+      </a>
+      <a href="{% url 'main:developers' %}" class="btn-credit fade-link">
+        ㅤ만든 이들
+        <img src="{% static 'main/images/buttonicon4.png' %}" alt="아이콘">
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // 🟩 가림막 페이드아웃
+    const splash = document.getElementById('splash');
+    window.addEventListener('load', () => {
+      setTimeout(() => splash.classList.add('hidden'), 500);
+      setTimeout(() => splash.remove(), 1500);
+    });
+
+    // 🎬 영상 자연스러운 반복
+    const video = document.getElementById('runnerVideo');
+    const FADE_TIME = 800;
+    video.addEventListener('timeupdate', () => {
+      if (video.duration - video.currentTime <= 1) {
+        video.style.transition = `opacity ${FADE_TIME}ms ease-in-out`;
+        video.style.opacity = '0';
+      }
+    });
+    video.addEventListener('ended', () => {
+      video.currentTime = 0.01;
+      video.play();
+      setTimeout(() => { video.style.opacity = '1'; }, 200);
+    });
+
+    // 버튼 클릭 시 콘텐츠 fade-out 후 페이지 이동
+    const contentSide = document.getElementById('contentSide');
+    const fadeLinks = document.querySelectorAll('.fade-link');
+
+    fadeLinks.forEach(link => {
+      link.addEventListener('click', function(e){
+        e.preventDefault();
+        contentSide.classList.add('fade-out');
+
+        setTimeout(() => {
+          // 버튼이 form 내부이면 form.submit()
+          const form = this.closest('form');
+          if (form) {
+            form.submit();
+          } else {
+            // a 링크 이동
+            const href = this.getAttribute('href');
+            if (href) window.location.href = href;
+          }
+        }, 500); // fade-out 시간
+      });
+    });
+  </script>
+</body>
+</html>

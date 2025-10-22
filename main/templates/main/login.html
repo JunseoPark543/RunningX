@@ -1,0 +1,259 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>로그인 | RunningX</title>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            color: white;
+            font-family: "Pretendard", system-ui, sans-serif;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative; /* footer 절대 위치 적용 위해 필요 */
+        }
+
+        /* 🟩 화이트 가림막 */
+        #splash {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: white;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 1s ease;
+        }
+
+        #splash.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 🟦 로고 */
+        .logo {
+            width: 280px;
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeInUp 1s ease forwards;
+            animation-delay: 0.8s;
+            max-width: 80vw;
+        }
+
+        /* 로그인 박스 */
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeInUp 1.2s ease forwards;
+            animation-delay: 1s;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input {
+            padding: 10px 14px;
+            width: 240px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 16px;
+            width: 240px;
+            border-radius: 8px;
+            background: white;
+            color: black;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #ddd;
+        }
+
+        a {
+            color: #aaa;
+            text-decoration: none;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        a:hover {
+            color: white;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOutLeft {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-50px); }
+        }
+
+        .fade-out {
+            animation: fadeOutLeft 0.5s forwards;
+        }
+
+  footer {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: #888888;
+  position: absolute;
+  bottom: 10px; /* 화면 하단에서 10px 위로 */
+  left: 0;
+}
+
+    footer hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin-bottom: 5px;
+      width: 90%;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer p {
+      margin: 2px 0;
+    }
+
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            body {
+                height: 100dvh;
+                padding-top: 10vh;
+                justify-content: flex-start;
+            }
+
+            .logo {
+                width: 60vw;
+                max-width: 220px;
+                margin-bottom: 20px;
+            }
+
+            input, button {
+                width: 70vw;
+                max-width: 260px;
+            }
+
+            h2 { font-size: 20px; }
+
+            a { font-size: 13px; }
+
+            footer { font-size: 10px; }
+        }
+
+        @media (max-width: 400px) {
+            .logo {
+                width: 75vw;
+                max-width: 200px;
+                margin-bottom: 16px;
+            }
+
+            input, button {
+                width: 80vw;
+                max-width: 240px;
+                font-size: 13px;
+                padding: 9px 12px;
+            }
+
+            h2 { font-size: 18px; }
+
+            a { font-size: 12px; }
+
+            footer { font-size: 9px; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 🟩 흰색 가림막 -->
+    <div id="splash"></div>
+
+    <!-- 🟦 중앙 로그인 섹션 -->
+    <div class="login-box" id="loginBox">
+        <img src="{% static 'main/images/whitelogo.png' %}" alt="RunningX Logo" class="logo">
+        <h2>로그인</h2>
+
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="아이디" required>
+            <input type="password" name="password" placeholder="비밀번호" required>
+            <button type="submit">로그인</button>
+        </form>
+
+        <a href="{% url 'main:signup' %}" class="fade-link">회원 가입</a>
+    </div>
+
+    <!-- 하단 푸터 -->
+    <footer>
+        <hr>
+        <p>Team RunningX | 총괄 팀장 장재혁 | 개발 팀장 박준서 | 개발팀 김윤건 | 연구팀 김건우 | 연구팀 이태희</p>
+        <p>© 2025, Team RunningX. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // 가림막 1초 뒤 페이드아웃
+        window.addEventListener('load', () => {
+            const splash = document.getElementById('splash');
+            setTimeout(() => splash.classList.add('hidden'), 500);
+            setTimeout(() => splash.remove(), 1500);
+        });
+
+        // 로그인 박스 내부 요소
+        const fadeElements = Array.from(document.getElementById('loginBox').children);
+        const allButtonsAndLinks = document.querySelectorAll('button, .fade-link');
+
+        allButtonsAndLinks.forEach(el => {
+            el.addEventListener('click', function(e){
+                e.preventDefault();
+                const href = this.tagName === 'A' ? this.getAttribute('href') : null;
+
+                // 모든 loginBox 내부 요소에 fade-out 클래스
+                fadeElements.forEach(child => child.classList.add('fade-out'));
+
+                // 버튼 클릭 시 form 제출은 0.5초 후
+                if(this.tagName === 'BUTTON' && this.type === 'submit'){
+                    setTimeout(() => this.closest('form').submit(), 500);
+                } else if(href){
+                    setTimeout(() => window.location.href = href, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
