@@ -70,7 +70,7 @@ def index(request):
             distance_m=cycle_distance,
             ors_api_key=ORS_API_KEY,
             tmap_api_key=TMAP_APP_KEY,
-            n_routes=10,
+            n_routes=5,
             ors_profile="foot-walking",
             tmap_profile="pedestrian",
             seed_base=13,
@@ -81,7 +81,7 @@ def index(request):
 
         # -------- 프론트에 주기 좋은 영문 키로 매핑 --------
         payload = []
-        print(len(routes))
+        # print(len(routes))
         for r in routes:
             if int(r["경로의 총 길이"]) < cycle_distance-int(round(500/cycle)) or int(r["경로의 총 길이"]) > cycle_distance+int(round(500/cycle)):
                 continue
@@ -107,7 +107,7 @@ def index(request):
                 'facilities':facility_list,
             }
             payload.append(info)
-            print(payload)
+            # print(payload)
         payload = classify_difficulty_and_add_label(payload)
         # print(payload)
         return render(request, "callapi/result.html", {
@@ -234,10 +234,10 @@ def find_direction(start_lat, start_lon, end_lat, end_lon):
 
 
 # 3. 경로 후보지 찾기
-import random
-from geopy.point import Point
-from geopy.distance import distance as geopy_distance
 def move_from_latlon(lat, lon, distance_m):
+    import random
+    from geopy.point import Point
+    from geopy.distance import distance as geopy_distance
     A_lat = float(lat)
     A_lon = float(lon)
     distance_km = float(distance_m) * 0.001
@@ -266,11 +266,11 @@ def move_from_latlon(lat, lon, distance_m):
 
 
 # (4)6. 편의시설 통과 여부
-from shapely.geometry import LineString
-import pandas as pd
-import geopandas as gpd
-import os
 def check_facility(route_coords):
+    from shapely.geometry import LineString
+    import pandas as pd
+    import geopandas as gpd
+    import os
     route = LineString(route_coords)
 
     # EPSG:5179 변환
@@ -302,8 +302,8 @@ def check_facility(route_coords):
 
 
 # 7. 경로의 고도데이터 불러오기
-import polyline
 def get_elevation(coords):
+    import polyline
     coord_list = json.loads(str(coords))
 
     # ORS는 [lon, lat] 형식 요구
