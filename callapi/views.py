@@ -8,7 +8,7 @@ import time
 
 from .ors_test2 import *
 from .calr import *
-from .calr_facility import check_facility
+# from .calr_facility import check_facility
 
 # API_KEY
 ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjYyM2M1NzI5MGRkYzRhYjdiODM2N2E4MjJiZjQ1MDg5IiwiaCI6Im11cm11cjY0In0="
@@ -125,7 +125,40 @@ def index(request):
     # GET
     return render(request, "callapi/index.html")
 
+# (4)6. 편의시설 통과 여부
+def check_facility(route_coords):
+    from shapely.geometry import LineString
+    import pandas as pd
+    import geopandas as gpd
+    import os
+    route = LineString(route_coords)
 
+    # EPSG:5179 변환
+    route_proj = gpd.GeoSeries([route], crs="EPSG:4326").to_crs(epsg=5179).iloc[0]
+
+    # 300m buffer 생성
+    route_buffer = route_proj.buffer(300)
+
+    # 사전 저장된 polygon 불러오기
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    file_name = os.path.join(BASE_DIR,"data","facility_buffers.geojson")
+    facilities = gpd.read_file(file_name)
+
+    # 후보군 필터링 -> intersects
+    candidates = facilities[facilities.geometry.intersects(route_buffer)]
+    intersecting = candidates[candidates.geometry.intersects(route_proj)]
+
+    # GeoDataFrame → JSON 변환을 위한 리스트로 구성
+    facility_list = []
+    for _, row in intersecting.iterrows():
+        facility_list.append({
+            "name": row["name"],
+            "type": row["type"],
+            "lat": row["lat"],
+            "lon": row["lon"]
+        })
+    # print(facility_list)
+    return facility_list
 
 
 # 모든 기능
