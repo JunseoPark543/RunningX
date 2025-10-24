@@ -71,7 +71,7 @@ def index(request):
             distance_m=cycle_distance,
             ors_api_key=ORS_API_KEY,
             tmap_api_key=TMAP_APP_KEY,
-            n_routes=5,
+            n_routes=10,
             ors_profile="foot-walking",
             tmap_profile="pedestrian",
             seed_base=13,
